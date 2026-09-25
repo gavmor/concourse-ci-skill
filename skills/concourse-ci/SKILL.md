@@ -4,8 +4,8 @@ description: "Use when working with ANY Concourse CI task: writing pipelines, co
 license: "(MIT AND CC-BY-SA-4.0)"
 compatibility: "Requires fly CLI, yq."
 metadata:
-  version: "1.11.4"
-  repository: "https://github.com/netresearch/concourse-ci-skill"
+  version: "1.11.5"
+  repository: "https://github.com/gavmor/concourse-ci-skill"
   author: "Netresearch DTT GmbH"
 allowed-tools:
   - "Bash(fly:*)"
