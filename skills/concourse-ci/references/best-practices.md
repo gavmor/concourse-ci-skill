@@ -1010,7 +1010,7 @@ jobs:
       playbook: playbooks/provision.yml
       inventory: inventory/hosts
       limit: production  # Target host group
-      extra_vars:
+      vars:
         app_version: "1.2.3"
 ```
 
