@@ -155,10 +155,10 @@ jobs:
       tags:                    # Run only tagged tasks
       - deploy
       - configure
-      extra_vars:
+      vars:
         app_version: "1.2.3"
       setup_commands:          # Run before playbook
-      - "pip install boto3"
+      - "pip install --break-system-packages boto3"
 ```
 
 ### Example: Terraform Resource
