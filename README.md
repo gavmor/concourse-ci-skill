@@ -2,7 +2,7 @@
 
 [![Claude Code Compatible](https://img.shields.io/badge/Claude%20Code-Compatible-blue?logo=anthropic)](https://claude.ai)
 [![License](https://img.shields.io/badge/License-MIT%20%2B%20CC--BY--SA--4.0-blue.svg)](#license)
-[![Version](https://img.shields.io/badge/version-1.2.0-green.svg)](https://github.com/netresearch/concourse-ci-skill/releases)
+[![Release](https://img.shields.io/github/v/release/netresearch/concourse-ci-skill?sort=semver)](https://github.com/netresearch/concourse-ci-skill/releases)
 
 **Agent Skill** for expert Concourse CI pipeline development, optimization, and troubleshooting.
 
