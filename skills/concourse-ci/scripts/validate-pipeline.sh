@@ -24,12 +24,12 @@ WARNINGS=0
 
 log_error() {
     echo -e "${RED}ERROR:${NC} $1"
-    ((ERRORS++))
+    ERRORS=$((ERRORS + 1))
 }
 
 log_warning() {
     echo -e "${YELLOW}WARNING:${NC} $1"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 }
 
 log_success() {
