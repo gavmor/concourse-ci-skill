@@ -57,4 +57,5 @@ No Makefile or npm scripts. Key commands:
 - [skills/concourse-ci/references/](skills/concourse-ci/references/) — pipeline syntax, resources, best practices
 - [skills/concourse-ci/examples/](skills/concourse-ci/examples/) — example pipeline YAML files
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — architecture overview
+- [docs/SECURITY-ASSURANCE.md](docs/SECURITY-ASSURANCE.md) — security assurance case: trust boundaries, requirements, countermeasures
 - [README.md](README.md) — installation and usage guide
