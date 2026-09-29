@@ -54,6 +54,19 @@ case_run "mismatching versions fail" "$(layout mismatch 1.2.3 1.2.4)" 1 \
     "ERROR: plugin.json version (1.2.3) != SKILL.md version (1.2.4)"
 case_run "this repository's versions agree" "$ROOT" 0 "Version check passed:"
 
+# The script used to exit 1 without a word in these layouts: find and grep -oP
+# failed inside command substitutions under set -euo pipefail.
+d="$(layout no-skills-dir 1.2.3 1.2.3)"; rm -rf "$d/skills"
+case_run "a missing skills/ directory is named" "$d" 1 \
+    "ERROR: no skills/ directory in"
+d="$(layout no-skill-md 1.2.3 1.2.3)"; rm -f "$d/skills/x/SKILL.md"
+case_run "a skills/ directory without SKILL.md is named" "$d" 1 \
+    "ERROR: no SKILL.md found under skills/"
+d="$(layout no-version 1.2.3 1.2.3)"
+printf -- '---\nname: x\n---\n\n# X\n' > "$d/skills/x/SKILL.md"
+case_run "a SKILL.md without a version is named" "$d" 1 \
+    "ERROR: skills/x/SKILL.md has no version"
+
 echo ""
 echo "check-plugin-version.sh: $PASS passed, $FAIL failed"
 [[ "$FAIL" -eq 0 ]]
