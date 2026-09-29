@@ -155,7 +155,7 @@ validate_common_issues() {
         local jobs_without_triggers
         jobs_without_triggers=$(yq eval '.jobs[] | select((.plan[] | select(.get) | .trigger) != true) | .name' "$file" 2>/dev/null | head -5)
         if [[ -n "$jobs_without_triggers" ]]; then
-            log_info "Jobs without auto-triggering gets (may be intentional): $(echo $jobs_without_triggers | tr '\n' ' ')"
+            log_info "Jobs without auto-triggering gets (may be intentional): $(echo "$jobs_without_triggers" | tr '\n' ' ')"
         fi
     fi
 
