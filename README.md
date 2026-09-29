@@ -173,6 +173,36 @@ resources:
 - [Concourse GitHub](https://github.com/concourse/concourse)
 - [Resource Types Catalog](https://concourse-ci.org/resource-types-list/)
 
+## Development and tests
+
+The shell scripts have behaviour tests in `tests/`:
+
+- `tests/validate-pipeline.sh` runs `skills/concourse-ci/scripts/validate-pipeline.sh` against pipeline fixtures: usage and missing-file errors, valid and invalid YAML, missing jobs and resources, literal versus `((var))` credentials, `tag_regex` findings, jobs without a triggering `get`, and the `fly` branch through a stub. It needs `yq` v4 and GNU grep; a locally installed `fly` is never called.
+- `tests/check-plugin-version.sh` covers `Build/Scripts/check-plugin-version.sh`, the version comparison the pre-push hook runs.
+
+Run them locally from the repository root:
+
+```bash
+for t in tests/*.sh; do bash "$t" || exit 1; done
+```
+
+Each test prints `ok` or `FAIL` per case, followed by the captured output of a failing case, and exits non-zero if any case failed. CI runs the same files on every pull request and on pushes to `main` (`.github/workflows/tests.yml`). The pre-commit hooks in `.pre-commit-config.yaml` run the linters that `lint.yml` runs in CI.
+
+New or changed behaviour in a script needs a test case in `tests/` in the same pull request.
+
+## Governance and policies
+
+This repository follows the Netresearch organisation policies:
+
+- [Governance](https://github.com/netresearch/.github/blob/main/GOVERNANCE.md): who decides, how changes are accepted, and how disputes are resolved.
+- [Roadmap](https://github.com/netresearch/.github/blob/main/ROADMAP.md): planned and excluded work for the coming year.
+- [Handling of dependency and code analysis findings](https://github.com/netresearch/.github/blob/main/SECURITY.md#handling-of-dependency-and-code-analysis-findings): thresholds, deadlines and exceptions for dependency and static-analysis findings.
+- [Secret management](https://github.com/netresearch/.github/blob/main/SECURITY.md#secret-management): how CI and release credentials are stored, accessed and rotated.
+- [Access roster](https://github.com/netresearch/.github/blob/main/docs/access-roster.md): the accounts that can change code, settings or releases of this repository, with their access level.
+- [Security assurance case](docs/SECURITY-ASSURANCE.md): threat model, trust boundaries and countermeasures for this skill.
+
+Every pull request to `main` runs these security checks (`.github/workflows/security.yml`): dependency review, Composer Audit, Opengrep (static analysis), Betterleaks (secret scanning) and zizmor (workflow analysis). CodeQL analyses the GitHub Actions workflows through the repository's default setup.
+
 ## License
 
 This project uses split licensing:
