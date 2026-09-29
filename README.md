@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
+
 # Concourse CI Skill
 
 [![Claude Code Compatible](https://img.shields.io/badge/Claude%20Code-Compatible-blue?logo=anthropic)](https://claude.ai)

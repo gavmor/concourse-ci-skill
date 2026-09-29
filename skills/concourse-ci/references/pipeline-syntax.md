@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
+
 # Concourse CI Pipeline Syntax Reference
 
 Complete YAML schema reference for Concourse CI pipelines.

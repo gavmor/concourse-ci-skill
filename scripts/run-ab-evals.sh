@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: Netresearch DTT GmbH
 # run-ab-evals.sh — A/B test evals WITHOUT vs WITH concourse-ci skill
 # Usage: bash scripts/run-ab-evals.sh [eval-name]
 # Outputs results to evals/results/
