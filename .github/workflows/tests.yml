@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: Netresearch DTT GmbH
+name: Skill Tests
+
+# Runs every tests/**/*.sh through the skill-repo-skill tests reusable: the
+# behaviour tests for the shipped pipeline validator
+# (skills/concourse-ci/scripts/validate-pipeline.sh) and for the version check
+# the pre-push hook runs (Build/Scripts/check-plugin-version.sh). The tests need
+# bash, yq v4, GNU grep and python3, all preinstalled on ubuntu-latest.
+# require_tests makes the job fail if the suite ever matches no test file
+# while the skill ships scripts.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+jobs:
+  tests:
+    uses: netresearch/skill-repo-skill/.github/workflows/tests.yml@main
+    permissions:
+      contents: read
+    with:
+      require_tests: true

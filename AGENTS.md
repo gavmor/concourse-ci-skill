@@ -21,7 +21,8 @@
 │   └── scripts/
 │       └── validate-pipeline.sh   # Pipeline validation script
 ├── evals/                         # Skill evaluation tests
-├── .github/workflows/             # CI: lint, release, auto-merge-deps, harness-verify
+├── tests/                         # Behaviour tests for the shell scripts
+├── .github/workflows/             # CI: lint, tests, security, release, auto-merge-deps, harness-verify
 ├── composer.json                  # Composer package (ai-agent-skill type)
 ├── docs/                          # Architecture and execution plans
 │   └── ARCHITECTURE.md
@@ -34,6 +35,7 @@ No Makefile or npm scripts. Key commands:
 
 - `skills/concourse-ci/scripts/validate-pipeline.sh <file>` — validate a Concourse pipeline YAML
 - `bash scripts/verify-harness.sh --format=text --status` — verify harness maturity
+- `for t in tests/*.sh; do bash "$t" || exit 1; done` — run the script behaviour tests (CI: `tests.yml`)
 
 ## Rules
 
