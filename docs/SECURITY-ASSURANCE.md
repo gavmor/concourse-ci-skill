@@ -26,7 +26,7 @@ This document states what users of the Concourse CI skill can and cannot expect 
 ## Trust boundaries
 
 - **Skill content to agent.** The project controls the text the agent reads; it does not control what the agent does with it. Everything the agent produces from the skill is untrusted until a human reviews it.
-- **Pipeline file to validator.** The pipeline file is input data. The validator passes its path to `yq`, `grep` and `fly` as a separate quoted argument (`validate-pipeline.sh`, `fly_args` array), never through `eval`, and runs under `set -euo pipefail`.
+- **Pipeline file to validator.** The pipeline file is input data. The validator passes its path to `yq`, `grep` and `fly` as a separate quoted argument (`validate-pipeline.sh`, `fly_args` array), never through `eval`, and runs under `set -euo pipefail`. Resource names read from the file reach `yq` through the environment (`strenv`), never as part of a `yq` expression.
 - **Validator to Concourse.** When `fly` is installed and a target is logged in, the validator passes the first target that `fly targets` lists to `fly validate-pipeline`. It never runs `fly login`, `fly set-pipeline` or any other command that changes a Concourse installation.
 - **Contributions to the repository.** Changes reach `main` only through pull requests; the checks listed below run on each of them.
 
@@ -35,7 +35,7 @@ This document states what users of the Concourse CI skill can and cannot expect 
 | Requirement | How it is met | Evidence |
 |-------------|---------------|----------|
 | Skill content never recommends literal credentials in pipelines. | The references and examples use `((var))` placeholders and `var_sources` credential managers. | `references/best-practices.md` (section "Credential Management"), `references/pipeline-syntax.md`, `examples/vars-template.yml` |
-| Literal credentials in a pipeline are reported (CWE-798). | The validator warns on `password:`, `secret:`, `token:` or `key:` followed by a literal value when the file contains no `((` placeholder. Checkpoints CC-08 and CC-15 check the same in an assessed project. | `validate-pipeline.sh` (`validate_common_issues`), `checkpoints.yaml`, `tests/validate-pipeline.sh` cases "literal credential is reported" and "((variable)) credential is not reported" |
+| Literal credentials in a pipeline are reported (CWE-798). | The validator warns on `password:`, `secret:`, `token:` or `key:` followed by a literal value when the file contains no `((` placeholder. Checkpoint CC-08 reports a literal `password:`, `secret:` or `token:` value in an assessed project's pipeline files. | `validate-pipeline.sh` (`validate_common_issues`), `checkpoints.yaml`, `tests/validate-pipeline.sh` cases "literal credential is reported" and "((variable)) credential is not reported" |
 | The validator does not execute pipeline content (CWE-78). | File paths are passed as arguments; the validator writes nothing and changes no Concourse state. | `validate-pipeline.sh`, `tests/validate-pipeline.sh` (the fly stub records the exact arguments) |
 | A failed validation is visible to callers. | The validator exits 1 when it records an error and prints a summary with error and warning counts. | `validate-pipeline.sh` (`main`), `tests/validate-pipeline.sh` |
 | The repository holds no secrets. | Betterleaks scans every push to `main` and every pull request. | `.github/workflows/security.yml` |
