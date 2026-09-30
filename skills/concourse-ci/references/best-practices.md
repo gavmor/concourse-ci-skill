@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
+
 # Concourse CI Best Practices and Troubleshooting
 
 Optimization patterns, common pitfalls, and debugging strategies.

@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
+
 # Concourse CI Pipeline Syntax Reference
 
 Complete YAML schema reference for Concourse CI pipelines.
@@ -34,7 +37,7 @@ resources:
   check_timeout: 1h          # Check timeout (default: 1h)
   tags: [private-network]    # Worker selection tags
   public: false              # Expose metadata publicly
-  webhook_token: secret      # Webhook trigger token
+  webhook_token: ((webhook-token))  # Webhook trigger token
   expose_build_created_by: false
 ```
 

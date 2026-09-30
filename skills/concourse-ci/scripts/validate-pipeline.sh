@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: Netresearch DTT GmbH
 # Concourse Pipeline Validation Script
 #
 # Usage:
@@ -24,12 +26,12 @@ WARNINGS=0
 
 log_error() {
     echo -e "${RED}ERROR:${NC} $1"
-    ((ERRORS++))
+    ERRORS=$((ERRORS + 1))
 }
 
 log_warning() {
     echo -e "${YELLOW}WARNING:${NC} $1"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 }
 
 log_success() {
@@ -132,22 +134,25 @@ validate_common_issues() {
         local git_resources
         git_resources=$(yq eval '.resources[] | select(.type == "git") | .name' "$file" 2>/dev/null || echo "")
 
-        for resource in $git_resources; do
+        # One name per line, passed to yq through the environment: a name is
+        # pipeline content and must never become part of the yq expression.
+        while IFS= read -r resource; do
+            [[ -n "$resource" ]] || continue
             local has_tag_regex
-            has_tag_regex=$(yq eval ".resources[] | select(.name == \"$resource\") | .source.tag_regex" "$file" 2>/dev/null || echo "null")
+            has_tag_regex=$(RES="$resource" yq eval '.resources[] | select(.name == strenv(RES)) | .source.tag_regex' "$file" 2>/dev/null || echo "null")
 
             if [[ "$has_tag_regex" != "null" && -n "$has_tag_regex" ]]; then
                 # Check if this resource is used in both get and put
                 local used_in_get
                 local used_in_put
-                used_in_get=$(yq eval ".jobs[].plan[] | select(.get == \"$resource\") | .get" "$file" 2>/dev/null || echo "")
-                used_in_put=$(yq eval ".jobs[].plan[] | select(.put == \"$resource\") | .put" "$file" 2>/dev/null || echo "")
+                used_in_get=$(RES="$resource" yq eval '.jobs[].plan[] | select(.get == strenv(RES)) | .get' "$file" 2>/dev/null || echo "")
+                used_in_put=$(RES="$resource" yq eval '.jobs[].plan[] | select(.put == strenv(RES)) | .put' "$file" 2>/dev/null || echo "")
 
                 if [[ -n "$used_in_get" && -n "$used_in_put" ]]; then
                     log_warning "Resource '$resource' with tag_regex is used for both get and put - consider separating"
                 fi
             fi
-        done
+        done <<< "$git_resources"
     fi
 
     # Check for missing trigger: true on get steps
@@ -155,7 +160,7 @@ validate_common_issues() {
         local jobs_without_triggers
         jobs_without_triggers=$(yq eval '.jobs[] | select((.plan[] | select(.get) | .trigger) != true) | .name' "$file" 2>/dev/null | head -5)
         if [[ -n "$jobs_without_triggers" ]]; then
-            log_info "Jobs without auto-triggering gets (may be intentional): $(echo $jobs_without_triggers | tr '\n' ' ')"
+            log_info "Jobs without auto-triggering gets (may be intentional): $(echo "$jobs_without_triggers" | tr '\n' ' ')"
         fi
     fi
 

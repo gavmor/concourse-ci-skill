@@ -1,3 +1,6 @@
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
+<!-- SPDX-FileCopyrightText: Netresearch DTT GmbH -->
+
 # Concourse CI Resources Configuration Guide
 
 Detailed configuration reference for commonly used Concourse CI resources.
