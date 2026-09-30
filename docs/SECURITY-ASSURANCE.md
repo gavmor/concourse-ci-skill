@@ -28,7 +28,7 @@ This document states what users of the Concourse CI skill can and cannot expect 
 - **Skill content to agent.** The project controls the text the agent reads; it does not control what the agent does with it. Everything the agent produces from the skill is untrusted until a human reviews it.
 - **Pipeline file to validator.** The pipeline file is input data. The validator passes its path to `yq`, `grep` and `fly` as a separate quoted argument (`validate-pipeline.sh`, `fly_args` array), never through `eval`, and runs under `set -euo pipefail`. Resource names read from the file reach `yq` through the environment (`strenv`), never as part of a `yq` expression.
 - **Validator to Concourse.** When `fly` is installed and a target is logged in, the validator passes the first target that `fly targets` lists to `fly validate-pipeline`. It never runs `fly login`, `fly set-pipeline` or any other command that changes a Concourse installation.
-- **Contributions to the repository.** Changes reach `main` only through pull requests; the checks listed below run on each of them.
+- **Contributions to the repository.** The branch protection of `main` requires a pull request for every account except repository administrators; the checks listed below run on each pull request to `main`.
 
 ## Security requirements and how they are met
 
