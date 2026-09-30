@@ -37,8 +37,8 @@ This document states what users of the Concourse CI skill can and cannot expect 
 | Skill content never recommends literal credentials in pipelines. | The references and examples use `((var))` placeholders and `var_sources` credential managers. | `references/best-practices.md` (section "Credential Management"), `references/pipeline-syntax.md`, `examples/vars-template.yml` |
 | Literal credentials in a pipeline are reported (CWE-798). | The validator warns on `password:`, `secret:`, `token:` or `key:` followed by a literal value when the file contains no `((` placeholder. Checkpoint CC-08 reports a literal `password:`, `secret:` or `token:` value in an assessed project's pipeline files. | `validate-pipeline.sh` (`validate_common_issues`), `checkpoints.yaml`, `tests/validate-pipeline.sh` cases "literal credential is reported" and "((variable)) credential is not reported" |
 | The validator does not execute pipeline content (CWE-78). | File paths are passed as arguments; the validator writes nothing and changes no Concourse state. | `validate-pipeline.sh`, `tests/validate-pipeline.sh` (the fly stub records the exact arguments) |
-| A failed validation is visible to callers. | The validator exits 1 when it records an error and prints a summary with error and warning counts. | `validate-pipeline.sh` (`main`), `tests/validate-pipeline.sh` |
-| The repository holds no secrets. | Betterleaks scans every push to `main` and every pull request. | `.github/workflows/security.yml` |
+| A failed validation is visible to callers. | The validator exits 1 when it records an error. A missing file or invalid YAML ends the run at once; any other error is reported after a summary with error and warning counts. | `validate-pipeline.sh` (`main`), `tests/validate-pipeline.sh` |
+| The repository holds no secrets. | Betterleaks scans every push to `main` and every pull request to `main`. | `.github/workflows/security.yml` |
 | CI cannot be steered by pull request content (CWE-94). | Workflows start with `permissions: {}` and grant each job only the scopes its reusable workflow needs. No workflow in this repository has a `run:` step that expands event data. The two `pull_request_target` workflows only call reusables that label or merge and do not check out pull request code. zizmor analyses the workflows. | `.github/workflows/*.yml`, `security.yml` (zizmor job) |
 | Dependencies and code are scanned (OWASP A06:2021). | Composer Audit, dependency review and Opengrep run on pull requests; Renovate proposes updates, including for pre-commit hooks. | `security.yml`, `renovate.json` |
 | Releases can be verified. | Releases run only from tags. The release reusable checks that the tag is annotated and signed, publishes `SHA256SUMS.txt` signed with Cosign (keyless) and attests build provenance for the archives. | `.github/workflows/release.yml`, [skill-repo-skill `release.yml`](https://github.com/netresearch/skill-repo-skill/blob/main/.github/workflows/release.yml) |
@@ -50,7 +50,7 @@ This document states what users of the Concourse CI skill can and cannot expect 
 - **Economy of mechanism.** The validator is one Bash script with no dependencies beyond `yq`, standard text tools and optionally `fly`.
 - **Complete mediation in CI.** Every pull request to `main` runs the same checks; none can be skipped by a path filter.
 
-## Checks on every pull request
+## Checks on every pull request to `main`
 
 `security.yml` (Betterleaks, zizmor, dependency review, Composer Audit, Opengrep), `lint.yml` (skill validation including ShellCheck, markdownlint, yamllint, actionlint), `tests.yml` (behaviour tests), `eval-validate.yml`, `harness-verify.yml`, `check-template-drift.yml`, and CodeQL for GitHub Actions through the repository's default setup.
 
