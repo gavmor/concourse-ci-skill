@@ -201,6 +201,29 @@ check "unescaped tag_regex and read/write tag resource are reported" 0 \
     "Resource 'repo' with tag_regex is used for both get and put" \
     "Summary: 0 errors, 2 warnings"
 
+# A resource name is pipeline content. It reached yq as part of the
+# expression and was split on whitespace, so a name with a space or a
+# double quote was never checked and a crafted name could run yq functions.
+ODD_NAME="$(fixture odd-name.yml <<'YAML'
+resources:
+  - name: 'my "repo"'
+    type: git
+    source:
+      uri: https://example.com/repo.git
+      tag_regex: '^v1\.2'
+jobs:
+  - name: release
+    plan:
+      - get: 'my "repo"'
+        trigger: true
+      - put: 'my "repo"'
+YAML
+)"
+run_validator "$BIN" "$ODD_NAME"
+check "a resource name with a space and quotes is checked as one name" 0 \
+    "Resource 'my \"repo\"' with tag_regex is used for both get and put" \
+    "Summary: 0 errors, 2 warnings"
+
 MANUAL="$(fixture manual.yml <<'YAML'
 resources:
   - name: repo
