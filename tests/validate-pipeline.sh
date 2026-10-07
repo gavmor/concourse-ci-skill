@@ -143,6 +143,20 @@ YAML
 run_validator "$BIN" "$BROKEN"
 check "invalid YAML fails" 1 "Invalid YAML syntax"
 
+# A long valid document before the syntax error: yq prints more than the five
+# lines the validator shows, and the exit status must still be 1.
+LONG_BROKEN="$WORK/long-broken.yml"
+{
+    echo "jobs:"
+    for i in $(seq 1 40); do
+        printf '  - name: job-%s\n    plan:\n      - task: t\n' "$i"
+    done
+    echo "---"
+    echo "not: [yaml"
+} > "$LONG_BROKEN"
+run_validator "$BIN" "$LONG_BROKEN"
+check "invalid YAML after a long document fails with exit 1" 1 "Invalid YAML syntax"
+
 CREDS="$(fixture creds.yml <<'YAML'
 resources:
   - name: repo

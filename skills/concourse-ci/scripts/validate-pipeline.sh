@@ -65,7 +65,10 @@ validate_yaml_syntax() {
             return 0
         else
             log_error "Invalid YAML syntax in $file"
-            yq eval '.' "$file" 2>&1 | head -5
+            # Show the start of yq's output. head may close the pipe before yq
+            # is done, and yq fails here anyway; under pipefail either would
+            # end the run with that status instead of the documented exit 1.
+            yq eval '.' "$file" 2>&1 | head -5 || true
             return 1
         fi
     elif command -v python3 &> /dev/null; then
