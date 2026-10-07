@@ -143,6 +143,20 @@ YAML
 run_validator "$BIN" "$BROKEN"
 check "invalid YAML fails" 1 "Invalid YAML syntax"
 
+# A long valid document before the syntax error: yq prints more than the five
+# lines the validator shows, and the exit status must still be 1.
+LONG_BROKEN="$WORK/long-broken.yml"
+{
+    echo "jobs:"
+    for i in $(seq 1 40); do
+        printf '  - name: job-%s\n    plan:\n      - task: t\n' "$i"
+    done
+    echo "---"
+    echo "not: [yaml"
+} > "$LONG_BROKEN"
+run_validator "$BIN" "$LONG_BROKEN"
+check "invalid YAML after a long document fails with exit 1" 1 "Invalid YAML syntax"
+
 CREDS="$(fixture creds.yml <<'YAML'
 resources:
   - name: repo
@@ -274,6 +288,83 @@ export FLY_RC=1
 run_validator "$FLYBIN:$BIN" "$VALID"
 check "failing fly validation fails the run" 1 \
     "fly syntax validation failed" "Summary: 1 errors, 0 warnings"
+
+# validate_yaml_syntax falls back to python3 when yq is missing. main() stops
+# earlier in that case (missing yq ends the run), so the function is called
+# directly from the sourced script. The pipeline path is an argument of the
+# python3 program, not part of its text, so a path holding a quote is read
+# like any other.
+PYBIN="$WORK/pybin"
+mkdir -p "$PYBIN"
+# A wrapper, not a symlink: a virtualenv interpreter reached through a
+# symlink elsewhere no longer finds its own packages.
+printf '#!/bin/sh\nexec "%s" "$@"\n' "$(command -v python3)" > "$PYBIN/python3"
+chmod +x "$PYBIN/python3"
+yaml_syntax_via_python3() {
+    set +e
+    # shellcheck disable=SC2016  # $1/$2 belong to the inner bash, not this one
+    OUT="$(PATH="$PYBIN" "$BASH_BIN" -c 'source "$1" && validate_yaml_syntax "$2"' _ "$SCRIPT" "$1" 2>&1)"
+    RC=$?
+    set -e
+}
+if "$PYBIN/python3" -c 'import yaml' 2>/dev/null; then
+    mkdir -p "$WORK/it's here"
+    cp "$VALID" "$WORK/it's here/pipe'line.yml"
+    yaml_syntax_via_python3 "$WORK/it's here/pipe'line.yml"
+    check "python3 fallback reads a path holding a quote" 0 \
+        "YAML syntax valid" "!Invalid YAML syntax"
+    yaml_syntax_via_python3 "$BROKEN"
+    check "python3 fallback still rejects invalid YAML" 1 "Invalid YAML syntax"
+else
+    echo "skip python3 fallback cases: PyYAML is not installed"
+fi
+
+BIN_NO_YQ="$WORK/bin-no-yq"
+mkdir -p "$BIN_NO_YQ"
+for tool in grep head awk tr; do
+    ln -s "$(command -v "$tool")" "$BIN_NO_YQ/$tool"
+done
+run_validator "$BIN_NO_YQ" "$VALID"
+check "a missing yq ends the run with exit 1" 1 "yq not found" "!Summary:"
+
+# Messages carry resource names from the pipeline; they are printed as text,
+# so a backslash sequence in a name stays a backslash sequence.
+ESC_NAME="$(fixture esc-name.yml <<'YAML'
+resources:
+  - name: 'repo\033[31m'
+    type: git
+    source:
+      uri: https://example.com/repo.git
+      tag_regex: '^v1\.2'
+jobs:
+  - name: release
+    plan:
+      - get: 'repo\033[31m'
+        trigger: true
+      - put: 'repo\033[31m'
+YAML
+)"
+run_validator "$BIN" "$ESC_NAME"
+check "a backslash sequence in a resource name is printed as text" 0 \
+    "Resource 'repo\\033[31m' with tag_regex"
+
+# Every shipped example pipeline passes the validator; the vars template is
+# not a pipeline and only has to parse.
+for example in "$ROOT"/skills/concourse-ci/examples/*.yml; do
+    name="$(basename "$example")"
+    if [[ "$name" == "vars-template.yml" ]]; then
+        if yq eval '.' "$example" > /dev/null 2>&1; then
+            echo "ok   example $name parses"
+            PASS=$((PASS + 1))
+        else
+            echo "FAIL example $name parses"
+            FAIL=$((FAIL + 1))
+        fi
+        continue
+    fi
+    run_validator "$BIN" "$example"
+    check "example $name passes the validator" 0 "YAML syntax valid" "Summary: 0 errors"
+done
 
 echo ""
 echo "validate-pipeline.sh: $PASS passed, $FAIL failed"

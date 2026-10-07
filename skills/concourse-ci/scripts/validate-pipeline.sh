@@ -14,32 +14,34 @@
 
 set -euo pipefail
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+# Colors for output. The variables hold the escape bytes themselves, so the
+# log functions print with printf '%s' and never interpret backslashes in a
+# message: messages carry file and resource names from the pipeline.
+RED=$'\033[0;31m'
+GREEN=$'\033[0;32m'
+YELLOW=$'\033[1;33m'
+NC=$'\033[0m' # No Color
 
 # Counters
 ERRORS=0
 WARNINGS=0
 
 log_error() {
-    echo -e "${RED}ERROR:${NC} $1"
+    printf '%s\n' "${RED}ERROR:${NC} $1"
     ERRORS=$((ERRORS + 1))
 }
 
 log_warning() {
-    echo -e "${YELLOW}WARNING:${NC} $1"
+    printf '%s\n' "${YELLOW}WARNING:${NC} $1"
     WARNINGS=$((WARNINGS + 1))
 }
 
 log_success() {
-    echo -e "${GREEN}OK:${NC} $1"
+    printf '%s\n' "${GREEN}OK:${NC} $1"
 }
 
 log_info() {
-    echo -e "INFO: $1"
+    printf '%s\n' "INFO: $1"
 }
 
 # Check dependencies
@@ -63,11 +65,15 @@ validate_yaml_syntax() {
             return 0
         else
             log_error "Invalid YAML syntax in $file"
-            yq eval '.' "$file" 2>&1 | head -5
+            # Show the start of yq's output. head may close the pipe before yq
+            # is done, and yq fails here anyway; under pipefail either would
+            # end the run with that status instead of the documented exit 1.
+            yq eval '.' "$file" 2>&1 | head -5 || true
             return 1
         fi
     elif command -v python3 &> /dev/null; then
-        if python3 -c "import yaml; yaml.safe_load(open('$file'))" 2>/dev/null; then
+        # The path is an argument, never part of the program text.
+        if python3 -c 'import sys, yaml; yaml.safe_load(open(sys.argv[1]))' "$file" 2>/dev/null; then
             log_success "YAML syntax valid"
             return 0
         else
@@ -261,4 +267,7 @@ main() {
     exit 0
 }
 
-main "$@"
+# Run only when executed; tests source the file to call single functions.
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
+fi

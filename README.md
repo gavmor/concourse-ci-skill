@@ -177,7 +177,7 @@ resources:
 
 The shell scripts have behaviour tests in `tests/`:
 
-- `tests/validate-pipeline.sh` runs `skills/concourse-ci/scripts/validate-pipeline.sh` against pipeline fixtures: usage and missing-file errors, valid and invalid YAML, missing jobs and resources, literal versus `((var))` credentials, `tag_regex` findings, jobs without a triggering `get`, and the `fly` branch through a stub. It needs `yq` v4 and GNU grep; a locally installed `fly` is never called.
+- `tests/validate-pipeline.sh` runs `skills/concourse-ci/scripts/validate-pipeline.sh` against pipeline fixtures: usage and missing-file errors, valid and invalid YAML (also after a long valid document), missing jobs and resources, literal versus `((var))` credentials, `tag_regex` findings, resource names with quotes or backslash sequences, jobs without a triggering `get`, the exit when `yq` is missing, the `python3` syntax check with a quote in the path, every example pipeline under `skills/concourse-ci/examples/`, and the `fly` branch through a stub. It needs `yq` v4 and GNU grep; a locally installed `fly` is never called.
 - `tests/check-plugin-version.sh` covers `Build/Scripts/check-plugin-version.sh`, the version comparison the pre-push hook runs.
 
 Run them locally from the repository root:
