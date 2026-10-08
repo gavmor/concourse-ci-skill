@@ -1040,10 +1040,9 @@ For simpler setups without the resource type:
       args:
       - -c
       - |
-        echo "$SSH_PRIVATE_KEY" > deploy_key
-        chmod 600 deploy_key
+        ( umask 077; echo "$SSH_PRIVATE_KEY" > deploy_key )
         cd source/ansible
-        ansible-playbook --private-key=../deploy_key -i inventory/hosts playbook.yml
+        ansible-playbook --private-key=../../deploy_key -i inventory/hosts playbook.yml
 ```
 
 ### Cross-Repository Pipeline Triggers
